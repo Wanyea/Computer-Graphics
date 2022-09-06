@@ -118,7 +118,18 @@ int main()
 	float positions[] = {
 		-0.5f, -0.5f, 0.0f, // left
 		 0.5f, -0.5f, 0.0f, // right
-		 0.0f,  0.5f, 0.0f  // top
+		 0.0f,  0.5f, 0.0f,  // top
+
+		 0.5f, -0.5f, 0.0f, // right
+		 1.0f,  0.5f, 0.0f, // top-right
+		 0.0f, 0.5f, 0.0f, // top 
+
+		 -1.0f,  0.5f, 0.0f, // top-left
+		 -0.5f, -0.5f, 0.0f, // left
+		 0.0f, 0.5f, 0.0f // top
+		 
+		 
+
 	};
 	 
 	unsigned int vao, vbo;
@@ -130,7 +141,7 @@ int main()
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
 	
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 	glEnableVertexAttribArray(0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -147,7 +158,7 @@ int main()
 		glUseProgram(ShaderProgram);
 		glBindVertexArray(vao);
 
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawArrays(GL_TRIANGLES, 0, 9);
 
 		glUseProgram(0);
 
