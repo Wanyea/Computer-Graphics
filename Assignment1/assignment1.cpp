@@ -54,7 +54,7 @@ int main()
 		return -1;
 	}
 
-	glViewport(0, 0, 800, 600);
+	
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
 	// ** Render Triangle - Assignment 1 **

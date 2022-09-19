@@ -1,0 +1,33 @@
+﻿  assignment2.cpp
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 2\Assignment 2\assignment2.cpp(132,35): warning C4244: 'argument': conversion from 'float' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=unsigned int
+          ]
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 2\Assignment 2\assignment2.cpp(133,35): warning C4244: 'argument': conversion from 'float' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=unsigned int
+          ]
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 2\Assignment 2\assignment2.cpp(134,38): warning C4244: 'argument': conversion from 'float' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=unsigned int
+          ]
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 2\Assignment 2\assignment2.cpp(140,38): warning C4244: 'argument': conversion from 'float' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=unsigned int
+          ]
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 2\Assignment 2\assignment2.cpp(141,35): warning C4244: 'argument': conversion from 'float' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=unsigned int
+          ]
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 2\Assignment 2\assignment2.cpp(142,38): warning C4244: 'argument': conversion from 'float' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=unsigned int
+          ]
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 2\Assignment 2\assignment2.cpp(266,72): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data
+  Assignment 2.vcxproj -> C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 2\x64\Debug\Assignment 2.exe

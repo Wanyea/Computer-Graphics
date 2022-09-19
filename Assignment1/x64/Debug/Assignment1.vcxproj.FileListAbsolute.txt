@@ -1,1 +1,2 @@
 C:\Users\frass\source\Computer-Graphics\Assignment1\x64\Debug\Assignment1.exe
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment1\x64\Debug\Assignment1.exe
