@@ -1,0 +1,7 @@
+﻿  assignment3.cpp
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\assignment3\assignment3\assignment3.cpp(150,25): warning C4244: 'initializing': conversion from 'float' to 'unsigned int', possible loss of data
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\assignment3\assignment3\assignment3.cpp(197,28): error C2086: 'std::vector<glm::vec3,std::allocator<glm::vec3>> normals': redefinition
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\assignment3\assignment3\assignment3.cpp(142): message : see declaration of 'normals'
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\assignment3\assignment3\assignment3.cpp(318,54): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\assignment3\assignment3\assignment3.cpp(322,56): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\assignment3\assignment3\assignment3.cpp(326,53): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data

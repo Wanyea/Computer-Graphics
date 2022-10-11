@@ -1,0 +1,6 @@
+﻿  assignment4.cpp
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 4\Assignment 4\assignment4.cpp(148,25): warning C4244: 'initializing': conversion from 'float' to 'unsigned int', possible loss of data
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 4\Assignment 4\assignment4.cpp(315,54): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 4\Assignment 4\assignment4.cpp(319,56): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 4\Assignment 4\assignment4.cpp(323,54): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data
+  Assignment 4.vcxproj -> C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 4\x64\Debug\Assignment 4.exe
