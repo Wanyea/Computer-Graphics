@@ -1,4 +1,4 @@
-// Assignment 5 - Completed by Wanyea Barbel
+// Assignment 6 - Completed by Wanyea Barbel
 
 #include <iostream>
 #include <vector>
@@ -19,21 +19,19 @@ const char* srcVS = R"HERE(
 	#version 330 core
 	layout (location = 0) in vec3 pos; 
     layout (location = 1) in vec3 normal;
-    layout (location = 2) in vec2 uvs;
-
-    out vec3 fragNormal;
-    out vec2 fragUVs;
-    out vec3 fragPos;
+    
+    out vec3 Normal;
+    out vec3 Position;
 
     uniform mat4 view;
     uniform mat4 projection;
+    uniform mat4 model;
 
 	void main () 
 	{
-		  gl_Position = projection * view * vec4(pos, 1);
-          fragNormal = vec3(vec4(normalize(normal), 0));
-          fragUVs = uvs;
-          fragPos = pos;
+        Normal = normal * mat3(transpose(inverse(model)); 
+        Position = vec3(model * vec4(pos, 1.0));
+        gl_Position = model * view * projection * vec4(pos, 1,0);
 	}
 
 )HERE";
@@ -41,201 +39,56 @@ const char* srcVS = R"HERE(
 const char* srcFS = R"HERE(
 	#version 330 core
 
-	out vec4 outColor;
+	out vec4 FragColor;
 
-    in vec3 fragNormal;
-    in vec2 fragUVs;
-    in vec3 fragPos; 
+    in vec3 Normal;
+    in vec3 Position;
 
-    uniform sampler2D tex;
-    uniform vec3 lightPos;
-    uniform vec3 viewPos;
-    uniform vec3 specularColor;
+    uniform vec3 cameraPosition;
+    uniform samplerCube skybox;
 
-	void main () 
-	{
-	    vec3 materialColor = texture(tex, fragUVs).rgb; 
-
-        vec3 ambientLight = 0.1 * materialColor;
-
-        vec3 lightDirection = normalize(lightPos - fragPos);
-        float diffuseLightVal = max(dot(lightDirection, fragNormal), 0.0);
-        vec3 diffuseLight = diffuseLightVal * materialColor;
-
-        vec3 viewDirection = normalize(viewPos - fragPos);
-        vec3 HDirection = normalize(lightDirection + viewDirection);
-        float specularLightVal = pow(max(dot(fragNormal, HDirection), 0.0), 10.0);
-        vec3 specularLight = specularColor * specularLightVal;
-    
-        outColor = vec4(ambientLight + diffuseLight + specularLight, 1.0);
-	}
+    void main()
+    {    
+        vec3 I = normalize(Position - cameraPosition);
+        vec3 R = reflect(I, normalize(Normal));
+        FragColor = vec4(texture(skybox, R).rgb, 1.0);
+    }
 )HERE";
 
 const char* skyboxSrcVS = R"HERE(
 	#version 330 core
+    layout (location = 0) in vec3 pos;
 
-    // Positions/Coordinates
-    layout (location = 0) in vec3 aPos;
-    // Normals (not necessarily normalized)
-    layout (location = 1) in vec3 aNormal;
-    // Colors
-    layout (location = 2) in vec3 aColor;
-    // Texture Coordinates
-    layout (location = 3) in vec2 aTex;
+    out vec3 TexCoords;
 
-
-    // Outputs the current position for the Fragment Shader
-    out vec3 crntPos;
-    // Outputs the normal for the Fragment Shader
-    out vec3 Normal;
-    // Outputs the color for the Fragment Shader
-    out vec3 color;
-    // Outputs the texture coordinates to the Fragment Shader
-    out vec2 texCoord;
-
-
-
-    // Imports the camera matrix
-    uniform mat4 camMatrix;
-    // Imports the transformation matrices
-    uniform mat4 model;
-    uniform mat4 translation;
-    uniform mat4 rotation;
-    uniform mat4 scale;
-
+    uniform mat4 projection;
+    uniform mat4 view;
 
     void main()
     {
-	    // calculates current position
-	    crntPos = vec3(model * translation * rotation * scale * vec4(aPos, 1.0f));
-	    // Assigns the normal from the Vertex Data to "Normal"
-	    Normal = aNormal;
-	    // Assigns the colors from the Vertex Data to "color"
-	    color = aColor;
-	    // Assigns the texture coordinates from the Vertex Data to "texCoord"
-	    texCoord = mat2(0.0, -1.0, 1.0, 0.0) * aTex;
-	
-	    // Outputs the positions/coordinates of all vertices
-	    gl_Position = camMatrix * vec4(crntPos, 1.0);
-    }
-
+        TexCoords = pos;
+        vec4 position = projection * view * vec4(pos, 1.0);
+        gl_Position = position.xyww;
+    }  
 )HERE";
 
 const char* skyboxSrcFS = R"HERE(
 	#version 330 core
 
-// Outputs colors in RGBA
-out vec4 FragColor;
+    out vec4 FragColor;
 
-// Imports the current position from the Vertex Shader
-in vec3 crntPos;
-// Imports the normal from the Vertex Shader
-in vec3 Normal;
-// Imports the color from the Vertex Shader
-in vec3 color;
-// Imports the texture coordinates from the Vertex Shader
-in vec2 texCoord;
+    in vec3 TexCoords;
 
+    uniform samplerCube skybox;
 
-
-// Gets the Texture Units from the main function
-uniform sampler2D diffuse0;
-uniform sampler2D specular0;
-// Gets the color of the light from the main function
-uniform vec4 lightColor;
-// Gets the position of the light from the main function
-uniform vec3 lightPos;
-// Gets the position of the camera from the main function
-uniform vec3 camPos;
-
-
-vec4 pointLight()
-{	
-	// used in two variables so I calculate it here to not have to do it twice
-	vec3 lightVec = lightPos - crntPos;
-
-	// intensity of light with respect to distance
-	float dist = length(lightVec);
-	float a = 3.0;
-	float b = 0.7;
-	float inten = 1.0f / (a * dist * dist + b * dist + 1.0f);
-
-	// ambient lighting
-	float ambient = 0.20f;
-
-	// diffuse lighting
-	vec3 normal = normalize(Normal);
-	vec3 lightDirection = normalize(lightVec);
-	float diffuse = max(dot(normal, lightDirection), 0.0f);
-
-	// specular lighting
-	float specularLight = 0.50f;
-	vec3 viewDirection = normalize(camPos - crntPos);
-	vec3 reflectionDirection = reflect(-lightDirection, normal);
-	float specAmount = pow(max(dot(viewDirection, reflectionDirection), 0.0f), 16);
-	float specular = specAmount * specularLight;
-
-	return (texture(diffuse0, texCoord) * (diffuse * inten + ambient) + texture(specular0, texCoord).r * specular * inten) * lightColor;
-}
-
-vec4 direcLight()
-{
-	// ambient lighting
-	float ambient = 0.50f;
-
-	// diffuse lighting
-	vec3 normal = normalize(Normal);
-	vec3 lightDirection = normalize(vec3(1.0f, 1.0f, -2.0f));
-	float diffuse = max(dot(normal, lightDirection), 0.0f);
-
-	// specular lighting
-	float specularLight = 0.50f;
-	vec3 viewDirection = normalize(camPos - crntPos);
-	vec3 reflectionDirection = reflect(-lightDirection, normal);
-	float specAmount = pow(max(dot(viewDirection, reflectionDirection), 0.0f), 16);
-	float specular = specAmount * specularLight;
-
-	return (texture(diffuse0, texCoord) * (diffuse + ambient) + texture(specular0, texCoord).r * specular) * lightColor;
-}
-
-vec4 spotLight()
-{
-	// controls how big the area that is lit up is
-	float outerCone = 0.90f;
-	float innerCone = 0.95f;
-
-	// ambient lighting
-	float ambient = 0.20f;
-
-	// diffuse lighting
-	vec3 normal = normalize(Normal);
-	vec3 lightDirection = normalize(lightPos - crntPos);
-	float diffuse = max(dot(normal, lightDirection), 0.0f);
-
-	// specular lighting
-	float specularLight = 0.50f;
-	vec3 viewDirection = normalize(camPos - crntPos);
-	vec3 reflectionDirection = reflect(-lightDirection, normal);
-	float specAmount = pow(max(dot(viewDirection, reflectionDirection), 0.0f), 16);
-	float specular = specAmount * specularLight;
-
-	// calculates the intensity of the crntPos based on its angle to the center of the light cone
-	float angle = dot(vec3(0.0f, -1.0f, 0.0f), -lightDirection);
-	float inten = clamp((angle - outerCone) / (innerCone - outerCone), 0.0f, 1.0f);
-
-	return (texture(diffuse0, texCoord) * (diffuse * inten + ambient) + texture(specular0, texCoord).r * specular * inten) * lightColor;
-}
-
-
-void main()
-{
-	// outputs final color
-	FragColor = direcLight();
-}
+    void main()
+    {    
+        FragColor = texture(skybox, TexCoords);
+    }
 )HERE";
 
-int xWindow = 700;
-int yWindow = 700;
+int xWindow = 1000;
+int yWindow = 1000;
 
 const float PI = 3.1415926535f;
 
