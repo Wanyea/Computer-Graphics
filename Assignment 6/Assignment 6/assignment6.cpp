@@ -387,8 +387,6 @@ int main(void)
     }
 
     unsigned int VAO = 0;
-    unsigned int skyboxVAO = 1;
-
     unsigned int stride = (3 + 3 + 2) * sizeof(float);
     glGenVertexArrays(1, &VAO);
     unsigned int vbo, ebo;
@@ -431,6 +429,86 @@ int main(void)
 
     glCullFace(GL_FRONT);
 
+    std::vector<std::string> faces
+    {
+        "right.jpg",
+        "left.jpg",
+        "top.jpg",
+        "bottom.jpg",
+        "front.jpg",
+        "back.jpg"
+    };
+
+    float skyboxVertices[] = {
+        // positions          
+        -1.0f,  1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+
+        -1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f
+    };
+
+    unsigned int skyboxVAO, skyboxVBO;
+    glGenVertexArrays(1, &skyboxVAO);
+    glGenBuffers(1, &skyboxVBO);
+    glBindVertexArray(skyboxVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+    unsigned int cubemapTexture = loadCubemap(faces);
+
+
+    glBindVertexArray(VAO);
+    glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
+
+    glBindVertexArray(skyboxVAO);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glDepthMask(GL_TRUE);
+
+    glBindVertexArray(0);
+    glUseProgram(0);
+
+    glfwSwapBuffers(window);
+
     while (!glfwWindowShouldClose(window))
     {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -467,7 +545,6 @@ int main(void)
 
 
         glDepthMask(GL_FALSE);
-        //skyboxShader.use();
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)(xWindow / yWindow), 0.1f, 100.0f);
         int projectionLocation = glGetUniformLocation(ShaderProgram, "projection");
         glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &projection[0][0]);
@@ -496,77 +573,16 @@ int main(void)
         int specularColorLocation = glGetUniformLocation(ShaderProgram, "specularColor");
         glUniform3f(specularColorLocation, specularColor.x, specularColor.y, specularColor.z);
 
-
-        std::vector<std::string> faces
-        {
-            "right.jpg",
-            "left.jpg",
-            "top.jpg",
-            "bottom.jpg",
-            "front.jpg",
-            "back.jpg"
-        };
-
-     float vertices[] = 
-     {
-         -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-          0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-          0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-          0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-         -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-         -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-
-         -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-          0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-          0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-          0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-         -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-         -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-
-         -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-         -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-         -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-         -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-         -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-         -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-
-          0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-          0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-          0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-          0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-          0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-          0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-
-         -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-          0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-          0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-          0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-         -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-         -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-
-         -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-          0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-          0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-          0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-         -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-         -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
-      };
-
-        unsigned int cubemapTexture = loadCubemap(faces);
-
-
-        glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
-
+        // skybox cube
         glBindVertexArray(skyboxVAO);
+        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
         glDrawArrays(GL_TRIANGLES, 0, 36);
-        glDepthMask(GL_TRUE);
-
         glBindVertexArray(0);
-        glUseProgram(0);
+        glDepthFunc(GL_LESS); // set depth function back to default
 
-        glfwSwapBuffers(window);
+
+       
     }
 
     glfwTerminate();
