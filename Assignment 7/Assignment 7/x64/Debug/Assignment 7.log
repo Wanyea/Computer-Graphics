@@ -1,0 +1,7 @@
+﻿  assignment7.cpp
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 7\Assignment 7\assignment7.cpp(957,33): warning C4244: 'initializing': conversion from 'GLint' to 'float', possible loss of data
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 7\Assignment 7\assignment7.cpp(958,40): warning C4244: 'argument': conversion from 'float' to 'GLint', possible loss of data
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 7\Assignment 7\assignment7.cpp(958,21): warning C4244: 'argument': conversion from 'float' to 'GLint', possible loss of data
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 7\Assignment 7\assignment7.cpp(1180,73): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 7\Assignment 7\assignment7.cpp(1181,74): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+  Assignment 7.vcxproj -> C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 7\x64\Debug\Assignment 7.exe
