@@ -1305,7 +1305,7 @@ void renderCube()
 unsigned int sphereVAO = 0;
 unsigned int indexCount;
 
-void renderSphere()
+void renderSphere(glm::vec3  )
 {
     if (sphereVAO == 0)
     {

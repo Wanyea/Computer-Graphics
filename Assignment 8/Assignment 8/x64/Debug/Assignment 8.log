@@ -1,0 +1,8 @@
+﻿  assignment8.cpp
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 8\Assignment 8\assignment8.cpp(959,33): warning C4244: 'initializing': conversion from 'GLint' to 'float', possible loss of data
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 8\Assignment 8\assignment8.cpp(960,40): warning C4244: 'argument': conversion from 'float' to 'GLint', possible loss of data
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 8\Assignment 8\assignment8.cpp(960,21): warning C4244: 'argument': conversion from 'float' to 'GLint', possible loss of data
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 8\Assignment 8\assignment8.cpp(1183,73): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 8\Assignment 8\assignment8.cpp(1184,74): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
+  Assignment 8.vcxproj -> C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 8\x64\Debug\Assignment 8.exe
