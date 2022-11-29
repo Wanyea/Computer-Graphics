@@ -12,11 +12,7 @@
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
 
-
-
 void renderCube();
-void renderSphere();
-
 
 const char* srcVS = R"HERE(
 #version 330 core
