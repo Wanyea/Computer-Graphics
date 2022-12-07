@@ -104,13 +104,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../External Resources/GLEW/include;$(SolutionDir)/../External Resources/GLFW/include;$(SolutionDir)/../External Resources/stb;$(SolutionDir)/../External Resources/glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../External Resources/GLEW/include;$(SolutionDir)/../External Resources/GLFW/include;$(SolutionDir)/../External Resources/stb;$(SolutionDir)/../External Resources/glm;$(SolutionDir)/../External Resources/assimp;$(SolutionDir)/../External Resources/helpers;$(SolutionDir)/../External Resources/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)/../External Resources/GLFW/lib-vc2022;$(SolutionDir)/../External Resources/GLEW/lib/Release/x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;glew32.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)/../External Resources/GLFW/lib-vc2022;C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\External Resources\libs\x64;$(SolutionDir)/../External Resources/GLEW/lib/Release/x64;C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 7\Assignment 7;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;glew32.lib;glfw3.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

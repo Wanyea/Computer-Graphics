@@ -1,3 +1,6 @@
+// Assignment 7 
+// Completed by Wanyea Barbel
+
 #include <iostream>
 #include <vector>
 #include <GL/glew.h>
@@ -5,12 +8,20 @@
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
+
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
+#include "Shader.h"
+#include "Camera.h"
+#include "Model.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
 void renderCube();
 void renderSphere();
-
 
 const char* srcVS = R"HERE(
 #version 330 core
@@ -537,6 +548,7 @@ int main(void)
 
     glfwSetKeyCallback(window, key_callback);
 
+    Shader shader("shader.vs.txt", "shader.vs.txt");
 
     unsigned int shaderObjVS = glCreateShader(GL_VERTEX_SHADER);
     int vertexLength = (int)strlen(srcVS);
@@ -823,7 +835,8 @@ int main(void)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         stbi_image_free(HDR_Data);
-    } else {
+    }
+    else {
         std::cout << "Failed to load HDR image." << std::endl;
     }
 
@@ -839,10 +852,10 @@ int main(void)
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); 
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-   
+
     glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
 
     glm::mat4 captureViews[] =
@@ -863,7 +876,7 @@ int main(void)
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, hdrTexture);
 
-    glViewport(0, 0, 1920, 1281); 
+    glViewport(0, 0, 1920, 1281);
     glBindFramebuffer(GL_FRAMEBUFFER, capFBO);
 
     for (unsigned int i = 0; i < 6; ++i)
@@ -876,7 +889,7 @@ int main(void)
 
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
- 
+
     glBindTexture(GL_TEXTURE_CUBE_MAP, environmentCubmap);
     glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
@@ -906,7 +919,7 @@ int main(void)
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, environmentCubmap);
 
-    glViewport(0, 0, 1920, 1281); 
+    glViewport(0, 0, 1920, 1281);
     glBindFramebuffer(GL_FRAMEBUFFER, capFBO);
     for (unsigned int i = 0; i < 6; ++i)
     {
@@ -932,7 +945,7 @@ int main(void)
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); 
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
@@ -1041,7 +1054,7 @@ int main(void)
 
             positions.emplace_back(xPos, yPos, zPos);
             normals.emplace_back(xPos, yPos, zPos);
-          
+
         }
     }
 
@@ -1055,7 +1068,8 @@ int main(void)
                 sphereIndices.push_back(y * (numOfStacks + 1) + x);
                 sphereIndices.push_back((y + 1) * (numOfStacks + 1) + x);
             }
-        } else {
+        }
+        else {
             for (int x = numOfStacks; x >= 0; --x)
             {
                 sphereIndices.push_back((y + 1) * (numOfStacks + 1) + x);
@@ -1082,7 +1096,7 @@ int main(void)
         data.push_back(normals[i].x);
         data.push_back(normals[i].y);
         data.push_back(normals[i].z);
-   
+
         normalLinePoints.push_back(positions[i]);
         normalLinePoints.emplace_back(1.0f, 0.0f, 0.0f);
         normalLinePoints.push_back(positions[i] + (positions[i] * 0.1f));
@@ -1105,7 +1119,6 @@ int main(void)
 
     }
 
-    
     unsigned int skyboxVAO, skyboxVBO;
     glGenVertexArrays(1, &skyboxVAO);
     glGenBuffers(1, &skyboxVBO);
@@ -1123,7 +1136,8 @@ int main(void)
     glUniform1i(glGetUniformLocation(skyShaderProgram, "skybox"), 0);
     glViewport(0, 0, 1920, 1281);
 
-
+    Model aircraft("aircraft.fbx");
+    Model dragon("dragon.obj");
 
     while (!glfwWindowShouldClose(window))
     {
@@ -1185,7 +1199,7 @@ int main(void)
         int matColorLocation = glGetUniformLocation(ShaderProgram, "materialColor");
         glUniform3fv(matColorLocation, 1, &goldColor[0]);
 
-        renderSphere();
+        //renderSphere();
 
         model = glm::translate(model, glm::vec3(-2.0f, 0.0f, 0.0f));
         glUniformMatrix4fv(modelLocation, 1, GL_FALSE, &model[0][0]);
@@ -1193,10 +1207,33 @@ int main(void)
         glm::vec3 stainlessColor = glm::vec3(0.72157f, 0.45098f, 0.20000f);
         glUniform3fv(matColorLocation, 1, &stainlessColor[0]);
 
-        renderSphere();
+        //renderSphere();
 
-        glDepthFunc(GL_LEQUAL);  
-        glUseProgram(skyShaderProgram); 
+        shader.use();
+        shader.setMat4("model", model);
+        shader.setMat4("view", view);
+        shader.setMat4("projection", projection);
+        shader.setInt("SamplesCount", 64);
+        shader.setFloat("metallic", 0.0);
+        shader.setFloat("roughness", 0.5);
+        shader.setVec3("materialColor", goldColor);
+        shader.setVec3("cameraPos", cameraPosition);
+        shader.setInt("irradianceMap", 0);
+        shader.setInt("prefilterMap", 1);
+
+        //aircraft.Draw(shader);
+
+        glm::mat4 dragonModel = glm::mat4(1.0f);
+        dragonModel = glm::scale(dragonModel, glm::vec3(0.1f, 0.1f, 0.1f));
+        dragonModel = glm::rotate(dragonModel, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        dragonModel = glm::translate(dragonModel, glm::vec3(10.0f, 0.0f, 20.0f));
+        shader.setMat4("model", dragonModel);
+        shader.setVec3("materialColor", stainlessColor);
+
+        //dragon.Draw(shader);
+
+        glDepthFunc(GL_LEQUAL);
+        glUseProgram(skyShaderProgram);
         glm::mat4 skyView = glm::mat4(glm::mat3(view));
         int skyViewLocation = glGetUniformLocation(skyShaderProgram, "view");
         glUniformMatrix4fv(skyViewLocation, 1, GL_FALSE, &skyView[0][0]);
@@ -1204,13 +1241,13 @@ int main(void)
         int skyProjectionLocation = glGetUniformLocation(skyShaderProgram, "projection");
         glUniformMatrix4fv(skyProjectionLocation, 1, GL_FALSE, &projection[0][0]);
 
-     
+
         glBindVertexArray(skyboxVAO);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_CUBE_MAP, environmentCubmap);
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
-        glDepthFunc(GL_LESS); 
+        glDepthFunc(GL_LESS);
 
         glBindVertexArray(0);
         glUseProgram(0);
@@ -1234,36 +1271,36 @@ void renderCube()
         float vertices[] = {
 
             // Back Face
-            -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, 
-             1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, 
-             1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f,         
-             1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, 
-            -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, 
-            -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, 
+            -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f,
+             1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f,
+             1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f,
+             1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f,
+            -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f,
+            -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f,
 
             // Front Face
-            -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, 
-             1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, 
-             1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, 
-             1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, 
-            -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, 
-            -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, 
+            -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f,
+             1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f,
+             1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f,
+             1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f,
+            -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f,
+            -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f,
 
             // Left Face
-            -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, 
-            -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, 
-            -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, 
-            -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, 
-            -1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, 
-            -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, 
+            -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f,
+            -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f,
+            -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f,
+            -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f,
+            -1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f,
+            -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f,
 
             // Right Face
-             1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, 
-             1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, 
-             1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f,      
-             1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, 
-             1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, 
-             1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f,   
+             1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f,
+             1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f,
+             1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f,
+             1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f,
+             1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f,
+             1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f,
 
              // Bottom  Face
              -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f,
@@ -1276,10 +1313,10 @@ void renderCube()
              // Top Face
              -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f,
               1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f,
-              1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f,  
+              1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f,
               1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f,
              -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f,
-             -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f        
+             -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f
         };
 
         glGenVertexArrays(1, &cubeVAO);
@@ -1344,7 +1381,7 @@ void renderSphere()
         bool oddRow = false;
         for (unsigned int y = 0; y < numOfSections; ++y)
         {
-            if (!oddRow) 
+            if (!oddRow)
             {
                 for (unsigned int x = 0; x <= numOfStacks; ++x)
                 {

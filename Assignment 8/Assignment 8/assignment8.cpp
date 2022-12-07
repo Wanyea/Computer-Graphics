@@ -2,70 +2,64 @@
 #include <vector>
 #include <fstream>
 #include <string>
-#include <utility> 
-#include <stdexcept> 
-#include <sstream> 
+#include <utility> // std::pair
+#include <stdexcept> // std::runtime_error
+#include <sstream> // std::stringstream
 #include <stdlib.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
 
-void renderCube();
 
-const char* srcVS = R"HERE(
+const char* srcVS = R"STOP(
 #version 330 core
-layout (location = 0) in vec3 position;
-layout (location = 1) in vec3 normal;
-
-out vec3 fragNormal;
-
-uniform mat4 model;
+layout (location = 0) in vec3 position; 
+layout (location = 1) in vec3 normal; 
+out vec3 fragNormal; 
 uniform mat4 view;
 uniform mat4 projection;
+uniform mat4 model;
 
-void main()
-{
-    fragNormal = vec3(vec4(normalize(normal), 0));
-    gl_Position = projection * view * model * vec4(position, 1.0);
+void main () {
+      gl_Position = projection * view * model * vec4(position, 1);
+      fragNormal = normalize(normal);
 }
-)HERE";
+)STOP";
 
-const char* srcFS = R"HERE(
+const char* srcFS = R"STOP(
 #version 330 core
-
 out vec4 outColor;
 in vec3 fragNormal;
-
-uniform vec3 RGB;
-
-void main () 
-{
-    outColor = vec4(RGB, 1);
+uniform vec3 rgb;
+void main () {
+   // outColor = vec4(vec3(1, 0.4553115f, 0.29534726f), 1);
+   // outColor = vec4(vec3(0.9444981f, 1.0f, 0.6309600f), 1);
+    outColor = vec4(rgb, 1);
 }
-)HERE";
+)STOP";
 
-
-const float pi = 3.1415926535f;
-int whichKeyPressed = 0;
-float elevation = pi / 2.0f;
-float phi = pi / 2.0f;
+const float PI = std::acos(-1);
+int whichRender = 0;
+float elevation = PI / 2.0f;
+float azimuth = PI / 2.0f;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
-int xWindow = 1300;
-int yWindow = 1300;
+
+void renderCube();
 
 
-float degreesToRadians(float degree)
+float deg2rad(float degree)
 {
-    return 2 * pi * (degree / 360.0f);
+    return 2 * PI * (degree / 360.0f);
 }
 
 static void key_callback(GLFWwindow* window, int key, int keycode, int action, int mods)
 {
     float cameraSpeed = static_cast<float>(deltaTime);
-    float speed = 18.0f;
+    float speed = 3.0f;
     bool ep = false, em = false, ap = false, am = false;
 
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
@@ -73,25 +67,25 @@ static void key_callback(GLFWwindow* window, int key, int keycode, int action, i
     }
 
     if (key == GLFW_KEY_F && action == GLFW_PRESS) {
-        whichKeyPressed = 0;
+        whichRender = 0;
     }
 
     if (key == GLFW_KEY_L && action == GLFW_PRESS) {
-        whichKeyPressed = 1;
+        whichRender = 1;
     }
 
     if (key == GLFW_KEY_P && action == GLFW_PRESS) {
-        whichKeyPressed = 2;
+        whichRender = 2;
     }
 
-    if (key == GLFW_KEY_S && action == GLFW_PRESS && elevation < degreesToRadians(179)) {
+    if (key == GLFW_KEY_S && action == GLFW_PRESS) {
         ep = true;
     }
     if (key == GLFW_KEY_S && action == GLFW_RELEASE) {
         ep = false;
     }
 
-    if (key == GLFW_KEY_W && action == GLFW_PRESS && elevation > degreesToRadians(1)) {
+    if (key == GLFW_KEY_W && action == GLFW_PRESS) {
         em = true;
     }
     if (key == GLFW_KEY_W && action == GLFW_RELEASE) {
@@ -124,45 +118,34 @@ static void key_callback(GLFWwindow* window, int key, int keycode, int action, i
 
     if (ap)
     {
-        phi -= cameraSpeed * speed;
+        azimuth += cameraSpeed * speed;
     }
 
     if (am)
     {
-        phi += cameraSpeed * speed;
+        azimuth -= cameraSpeed * speed;
     }
 
 }
 
 int main(void)
 {
-    float D65[81] = 
-    {   
-        49.9755f, 52.3118f, 54.6482f, 68.7015f, 82.7549f, 87.1204f, 91.486f, 
-        92.4589f, 93.4318f, 90.057f, 86.6823f, 95.7736f, 104.865f, 110.936f, 117.008f, 117.41f,
-        117.812f, 116.336f, 114.861f, 115.392f, 115.923f, 112.367f, 108.811f, 109.082f,
-        109.354f, 108.578f, 107.802f, 106.296f, 104.79f, 106.239f, 107.689f, 106.047f,
-        104.405f, 104.225f, 104.046f, 102.023f, 100.0f, 98.1671f, 96.3342f, 96.0611f,
-        95.788f, 92.2368f, 88.6856f, 89.3459f, 90.0062f, 89.8026f, 89.5991f, 88.6489f,
-        87.6987f, 85.4936f, 83.2886f, 83.4939f, 83.6992f, 81.863f, 80.0268f, 80.1207f,
-        80.2146f, 81.2462f, 82.2778f, 80.281f, 78.2842f, 74.0027f, 69.7213f, 70.6652f,
-        71.6091f, 72.979f, 74.349f, 67.9765f, 61.604f, 65.7448f, 69.8856f, 72.4863f,
-        75.087f, 69.3398f, 63.5927f, 55.0054f, 46.4182f, 56.6118f, 66.8054f, 65.0941f, 
-        63.3828f 
-    };
-
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     GLFWwindow* window;
 
+    // Initialize the library
     if (!glfwInit())
     {
         return -1;
     }
 
+    int xAspect = 1280;
+    int yAspect = 1280;
 
-    window = glfwCreateWindow(xWindow, yWindow, "OpenGL Window", NULL, NULL);
+    // Create a windowed mode window and its OpenGL context
+    window = glfwCreateWindow(xAspect, yAspect, "Hello World", NULL, NULL);
 
     if (!window)
     {
@@ -170,6 +153,7 @@ int main(void)
         return -1;
     }
 
+    // Make the window's context current
     glfwMakeContextCurrent(window);
 
     GLenum err = glewInit();
@@ -180,13 +164,12 @@ int main(void)
 
     glfwSetKeyCallback(window, key_callback);
 
+    // error checks 
 
     unsigned int shaderObjVS = glCreateShader(GL_VERTEX_SHADER);
     int vertexLength = (int)strlen(srcVS);
     glShaderSource(shaderObjVS, 1, &srcVS, &vertexLength);
     glCompileShader(shaderObjVS);
-
-    // Check for errors.
     int vertexSuccess;
     glGetShaderiv(shaderObjVS, GL_COMPILE_STATUS, &vertexSuccess);
     if (vertexSuccess == GL_FALSE) {
@@ -201,8 +184,6 @@ int main(void)
     int fragmentLength = (int)strlen(srcFS);
     glShaderSource(shaderObjFS, 1, &srcFS, &fragmentLength);
     glCompileShader(shaderObjFS);
-
-    // Check for errors.
     int fragmentSuccess;
     glGetShaderiv(shaderObjFS, GL_COMPILE_STATUS, &fragmentSuccess);
     if (fragmentSuccess == GL_FALSE) {
@@ -217,8 +198,6 @@ int main(void)
     glAttachShader(ShaderProgram, shaderObjVS);
     glAttachShader(ShaderProgram, shaderObjFS);
     glLinkProgram(ShaderProgram);
-
-    // Check for errors.
     int shaderSuccess;
     glGetProgramiv(ShaderProgram, GL_LINK_STATUS, &shaderSuccess);
     if (shaderSuccess == GL_FALSE) {
@@ -232,55 +211,56 @@ int main(void)
 
     glValidateProgram(ShaderProgram);
 
-   
     std::vector<glm::vec3> positions;
     std::vector<glm::vec3> normals;
-    std::vector<glm::vec2> uvs;
     std::vector<unsigned int> sphereIndices;
 
-    std::vector<glm::vec3> secondPositions;
-    std::vector<glm::vec3> secondNormals;
-    std::vector<glm::vec2> secondUVs;
-    std::vector<unsigned int> secondSphereIndices;
+    const unsigned int X_SEGMENTS = 16;
+    const unsigned int Y_SEGMENTS = 16;
 
-    const unsigned int numOfStacks = 256;
-    const unsigned int numOfSections = 256;
-
-    float radius = 0.5f;
-
-    for (unsigned int x = 0; x <= numOfStacks; ++x)
+    float radius = 0.8f;
+    for (unsigned int x = 0; x <= X_SEGMENTS; ++x)
     {
-        for (unsigned int y = 0; y <= numOfSections; ++y)
+        for (unsigned int y = 0; y <= Y_SEGMENTS; ++y)
         {
-            float xSegment = (float)x / (float)numOfStacks;
-            float ySegment = (float)y / (float)numOfSections;
-            float xPos = (std::cos(xSegment * 2.0f * pi) * std::sin(ySegment * pi)) * radius;
-            float yPos = (std::cos(ySegment * pi)) * radius;
-            float zPos = (std::sin(xSegment * 2.0f * pi) * std::sin(ySegment * pi)) * radius;
+            float xSegment = (float)x / (float)X_SEGMENTS;
+            float ySegment = (float)y / (float)Y_SEGMENTS;
+            float xPos = (std::cos(xSegment * 2.0f * PI) * std::sin(ySegment * PI)) * radius;
+            float yPos = (std::cos(ySegment * PI)) * radius;
+            float zPos = (std::sin(xSegment * 2.0f * PI) * std::sin(ySegment * PI)) * radius;
 
             positions.emplace_back(xPos, yPos, zPos);
             normals.emplace_back(xPos, yPos, zPos);
 
+            /*std::cout << positions.back().x;
+            printf(" ");
+            std::cout << positions.back().y;
+            printf(" ");
+            std::cout << positions.back().z;
+            printf("\n");*/
         }
     }
 
-    bool oddRow = false;
+    // std::cout << positions.size();
 
-    for (unsigned int y = 0; y < numOfSections; ++y)
+
+    bool oddRow = false;
+    for (unsigned int y = 0; y < Y_SEGMENTS; ++y)
     {
-        if (!oddRow)
+        if (!oddRow) // even rows: y == 0, y == 2; and so on
         {
-            for (unsigned int x = 0; x <= numOfStacks; ++x)
+            for (unsigned int x = 0; x <= X_SEGMENTS; ++x)
             {
-                sphereIndices.push_back(y * (numOfStacks + 1) + x);
-                sphereIndices.push_back((y + 1) * (numOfStacks + 1) + x);
+                sphereIndices.push_back(y * (X_SEGMENTS + 1) + x);
+                sphereIndices.push_back((y + 1) * (X_SEGMENTS + 1) + x);
             }
         }
-        else {
-            for (int x = numOfStacks; x >= 0; --x)
+        else
+        {
+            for (int x = X_SEGMENTS; x >= 0; --x)
             {
-                sphereIndices.push_back((y + 1) * (numOfStacks + 1) + x);
-                sphereIndices.push_back(y * (numOfStacks + 1) + x);
+                sphereIndices.push_back((y + 1) * (X_SEGMENTS + 1) + x);
+                sphereIndices.push_back(y * (X_SEGMENTS + 1) + x);
             }
         }
         oddRow = !oddRow;
@@ -289,40 +269,54 @@ int main(void)
     unsigned int indexCount;
     indexCount = static_cast<unsigned int>(sphereIndices.size());
 
-    std::vector<float> data;
-    std::vector<glm::vec3> normalPoints;
-    std::vector<glm::vec3> tangentPoints;
-    std::vector<glm::vec3> bitangentPoints;
+    std::vector<glm::vec3> data;
+    std::vector<glm::vec3> normalLinePoints;
+    std::vector<glm::vec3> tangentLinePoints;
+    std::vector<glm::vec3> bitangentLinePoints;
+
 
     for (unsigned int i = 0, j = 0; i < positions.size(); ++i)
     {
-        data.push_back(positions[i].x);
-        data.push_back(positions[i].y);
-        data.push_back(positions[i].z);
-        data.push_back(normals[i].x);
-        data.push_back(normals[i].y);
-        data.push_back(normals[i].z);
+        data.push_back(positions[i]);
+        data.push_back(normals[i]);
 
-        normalPoints.push_back(positions[i]);
-        normalPoints.emplace_back(1.0f, 0.0f, 0.0f);
-        normalPoints.push_back(positions[i] + (positions[i] * 0.1f));
-        normalPoints.emplace_back(1.0f, 0.0f, 0.0f);
+        normalLinePoints.push_back(positions[i]);
+        normalLinePoints.emplace_back(1.0f, 0.0f, 0.0f);
+        normalLinePoints.push_back(positions[i] + (positions[i] * 0.1f));
+        normalLinePoints.emplace_back(1.0f, 0.0f, 0.0f);
 
         glm::vec3 tangentVar = glm::normalize(glm::cross(positions[i], glm::vec3(0.0f, 0.0f, 1.0f)));
 
-        tangentPoints.push_back(positions[i]);
-        tangentPoints.emplace_back(0.0f, 0.0f, 1.0f);
-        tangentPoints.push_back(positions[i] + 0.1f * tangentVar);
-        tangentPoints.emplace_back(0.0f, 0.0f, 1.0f);
+        tangentLinePoints.push_back(positions[i]);
+        tangentLinePoints.emplace_back(0.0f, 0.0f, 1.0f);
+        tangentLinePoints.push_back(positions[i] + 0.1f * tangentVar);
+        tangentLinePoints.emplace_back(0.0f, 0.0f, 1.0f);
 
         glm::vec3 bitangentVar = glm::normalize(glm::cross(positions[i], tangentVar));
 
-        bitangentPoints.push_back(positions[i]);
-        bitangentPoints.emplace_back(0.0f, 1.0f, 0.0f);
-        bitangentPoints.push_back(positions[i] + 0.1f * bitangentVar);
-        bitangentPoints.emplace_back(0.0f, 1.0f, 0.0f);
+        bitangentLinePoints.push_back(positions[i]);
+        bitangentLinePoints.emplace_back(0.0f, 1.0f, 0.0f);
+        bitangentLinePoints.push_back(positions[i] + 0.1f * bitangentVar);
+        bitangentLinePoints.emplace_back(0.0f, 1.0f, 0.0f);
+
 
     }
+
+    /*for (int i = 0; i < bitangentLinePoints.size(); i++)
+    {
+        printf("Original position: %f", normalLinePoints[i].x);
+        printf("\n");
+        if (i % 4 == 0)
+        {
+            if (tangentLinePoints[i].x != bitangentLinePoints[i].x)
+            {
+                printf("Not the same point! ");
+                printf("%f %f", tangentLinePoints[i].x, bitangentLinePoints[i].x);
+                printf("\n");
+            }
+        }
+    }*/
+
 
     unsigned int sphereVAO = 0;
     glGenVertexArrays(1, &sphereVAO);
@@ -340,37 +334,37 @@ int main(void)
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(glm::vec3)));
 
-    unsigned int normalVAO = 0;
-    glGenVertexArrays(1, &normalVAO);
+    unsigned int normalLineVAO = 0;
+    glGenVertexArrays(1, &normalLineVAO);
     unsigned int vboNormal;
     glGenBuffers(1, &vboNormal);
-    glBindVertexArray(normalVAO);
+    glBindVertexArray(normalLineVAO);
     glBindBuffer(GL_ARRAY_BUFFER, vboNormal);
-    glBufferData(GL_ARRAY_BUFFER, normalPoints.size() * sizeof(glm::vec3), &normalPoints[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, normalLinePoints.size() * sizeof(glm::vec3), &normalLinePoints[0], GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(glm::vec3)));
 
-    unsigned int tangentVAO = 0;
-    glGenVertexArrays(1, &tangentVAO);
+    unsigned int tangentLineVAO = 0;
+    glGenVertexArrays(1, &tangentLineVAO);
     unsigned int vboTangent;
     glGenBuffers(1, &vboTangent);
-    glBindVertexArray(tangentVAO);
+    glBindVertexArray(tangentLineVAO);
     glBindBuffer(GL_ARRAY_BUFFER, vboTangent);
-    glBufferData(GL_ARRAY_BUFFER, tangentPoints.size() * sizeof(glm::vec3), &tangentPoints[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, tangentLinePoints.size() * sizeof(glm::vec3), &tangentLinePoints[0], GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(glm::vec3)));
 
-    unsigned int bitangentVAO = 0;
-    glGenVertexArrays(1, &bitangentVAO);
+    unsigned int bitangentLineVAO = 0;
+    glGenVertexArrays(1, &bitangentLineVAO);
     unsigned int vboBitangent;
     glGenBuffers(1, &vboBitangent);
-    glBindVertexArray(bitangentVAO);
+    glBindVertexArray(bitangentLineVAO);
     glBindBuffer(GL_ARRAY_BUFFER, vboBitangent);
-    glBufferData(GL_ARRAY_BUFFER, bitangentPoints.size() * sizeof(glm::vec3), &bitangentPoints[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, bitangentLinePoints.size() * sizeof(glm::vec3), &bitangentLinePoints[0], GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
     glEnableVertexAttribArray(1);
@@ -382,6 +376,18 @@ int main(void)
     glDepthFunc(GL_LEQUAL);
     glDepthRange(0.0f, 1.0f);
 
+
+    float d65[81] = { 49.9755f, 52.3118f, 54.6482f, 68.7015f, 82.7549f, 87.1204f, 91.486f, 92.4589f,
+    93.4318f, 90.057f, 86.6823f, 95.7736f, 104.865f, 110.936f, 117.008f, 117.41f,
+    117.812f, 116.336f, 114.861f, 115.392f, 115.923f, 112.367f, 108.811f, 109.082f,
+    109.354f, 108.578f, 107.802f, 106.296f, 104.79f, 106.239f, 107.689f, 106.047f,
+    104.405f, 104.225f, 104.046f, 102.023f, 100.0f, 98.1671f, 96.3342f, 96.0611f,
+    95.788f, 92.2368f, 88.6856f, 89.3459f, 90.0062f, 89.8026f, 89.5991f, 88.6489f,
+    87.6987f, 85.4936f, 83.2886f, 83.4939f, 83.6992f, 81.863f, 80.0268f, 80.1207f,
+    80.2146f, 81.2462f, 82.2778f, 80.281f, 78.2842f, 74.0027f, 69.7213f, 70.6652f,
+    71.6091f, 72.979f, 74.349f, 67.9765f, 61.604f, 65.7448f, 69.8856f, 72.4863f,
+    75.087f, 69.3398f, 63.5927f, 55.0054f, 46.4182f, 56.6118f, 66.8054f, 65.0941f, 63.3828f };
+
     glm::mat3 transformationMatrix = glm::mat3(3.2404542f, -1.5371385f, -0.4985314f, -0.9692660f, 1.8760108f, 0.0415560f, 0.0556434f, -0.2040259f, 1.0572252f);
     transformationMatrix = glm::transpose(transformationMatrix);
 
@@ -391,45 +397,53 @@ int main(void)
     printf("\n");
 
     std::ifstream xyzCSV("XYZ.csv");
-    if (!xyzCSV.is_open()) throw std::runtime_error("There was an error opening the CSV...");
+    if (!xyzCSV.is_open()) throw std::runtime_error("Could not open file");
 
     std::vector<glm::vec3> xyzVals;
+
+    //std::cout << xyzVals[0].size();
 
     std::string line, colname;
     float val;
 
+
     while (std::getline(xyzCSV, line))
     {
-        std::stringstream stringStream(line);
+        // Create a stringstream of the current line
+        std::stringstream ss(line);
 
-        int xyzIndex = 0;
+        // Keep track of the current column index
+        int colIdx = 0;
         glm::vec3 currCMF;
 
-        // Grab each x,y,z from the CSV and assignment to the proper index. 
-        while (stringStream >> val) {
-            if (stringStream.peek() == ',') stringStream.ignore();
+        // Extract each integer
+        while (ss >> val) {
 
-            if (xyzIndex == 0)
+            // xyzVals[colIdx].push_back(val);
+            // If the next token is a comma, ignore it and move on
+            if (ss.peek() == ',') ss.ignore();
+
+            if (colIdx == 0)
             {
                 currCMF.x = val;
             }
-            if (xyzIndex == 1)
+            if (colIdx == 1)
             {
                 currCMF.y = val;
             }
-            if (xyzIndex == 2)
+            if (colIdx == 2)
             {
                 currCMF.z = val;
             }
 
-            xyzIndex++;
+            // Increment the column index
+            colIdx++;
         }
         xyzVals.push_back(currCMF);
     }
 
-    // Open CSV file and parse each line 
     std::ifstream specCSV("MacbethColorChecker.csv");
-    if (!specCSV.is_open()) throw std::runtime_error("There was an error opening the CSV...");
+    if (!specCSV.is_open()) throw std::runtime_error("Could not open file");
 
     std::vector<float> specVals[24];
 
@@ -438,28 +452,40 @@ int main(void)
 
     while (std::getline(specCSV, lineSpec))
     {
-        std::stringstream stringStream(lineSpec);
+        // Create a stringstream of the current line
+        std::stringstream ss(lineSpec);
 
-        int xyzIndex = 0;
+        // Keep track of the current column index
+        int colIdx = 0;
 
-        while (stringStream >> valSpec) {
+        // Extract each integer
+        while (ss >> valSpec) {
 
-            specVals[xyzIndex].push_back(valSpec);
-            if (stringStream.peek() == ',') stringStream.ignore();
+            specVals[colIdx].push_back(valSpec);
+            // If the next token is a comma, ignore it and move on
+            if (ss.peek() == ',') ss.ignore();
 
 
-            xyzIndex++;
+            // Increment the column index
+            colIdx++;
         }
     }
 
-    float chromaticity[9] = { 0.67f, 0.33f, 0.0f, 0.21f, 0.71f, 0.08f, 0.15f, 0.06f, 0.79f };
-    float currentD65[3] = { 0.3127f, 0.3291f, 0.3582f };
+    /*std::cout << specVals[23].size();*/
 
-    glm::mat3 chromatrix = glm::make_mat3(chromaticity);
+    float chromatrixVals[9] = { 0.67f, 0.33f, 0.0f, 0.21f, 0.71f, 0.08f, 0.15f, 0.06f, 0.79f };
+    float D65[3] = { 0.3127f, 0.3291f, 0.3582f };
+
+    glm::mat3 chromatrix = glm::make_mat3(chromatrixVals);
     chromatrix = glm::transpose(chromatrix);
+    //std::cout << chromatrix[0][2];
     glm::mat3 chromatrixInverse = glm::inverse(chromatrix);
-    glm::vec3 white = glm::make_vec3(currentD65);
+
+    glm::vec3 white = glm::make_vec3(D65);
+
+
     glm::mat3 RGBTransformer = glm::mat3(0.0f);
+
     glm::vec3 scaler = glm::vec3(0.0f, 0.0f, 0.0f);
 
     for (int i = 0; i < 3; i++)
@@ -478,19 +504,20 @@ int main(void)
     printf("\n");
 
 
-    std::vector<glm::vec3> rgbValues;
+    std::vector<glm::vec3> RGBVals;
 
     for (int i = 0; i < 24; i++)
     {
         float Ysum = 0.0f;
         glm::vec3 currSpec = glm::vec3(0.0);
         for (int j = 0; j < specVals[0].size(); j++)
-        {
-            currSpec.x += specVals[i][j] * xyzVals[j].x * D65[j];
-            currSpec.y += specVals[i][j] * xyzVals[j].y * D65[j];
-            currSpec.z += specVals[i][j] * xyzVals[j].z * D65[j];
 
-            Ysum += (D65[j] * xyzVals[j].y);
+        {
+            currSpec.x += specVals[i][j] * xyzVals[j].x * d65[j];
+            currSpec.y += specVals[i][j] * xyzVals[j].y * d65[j];
+            currSpec.z += specVals[i][j] * xyzVals[j].z * d65[j];
+
+            Ysum += (d65[j] * xyzVals[j].y);
 
 
         }
@@ -498,101 +525,130 @@ int main(void)
         currSpec.y /= Ysum;
         currSpec.z /= Ysum;
 
+        /*printf("Final XYZ Value being pushed: ");
+        std::cout << currSpec.x;
+        printf(" ");
+        std::cout << currSpec.y;
+        printf(" ");
+        std::cout << currSpec.z;
+        printf(" ");
+        printf("\n");*/
 
-        glm::vec3 calculatedRGB = transformationMatrix * currSpec;
-        calculatedRGB.x = transformationMatrix[0].x * currSpec.x + transformationMatrix[1].x * currSpec.y + transformationMatrix[2].x * currSpec.z;
-        calculatedRGB.y = transformationMatrix[0].y * currSpec.x + transformationMatrix[1].y * currSpec.y + transformationMatrix[2].y * currSpec.z;
-        calculatedRGB.z = transformationMatrix[0].z * currSpec.x + transformationMatrix[1].z * currSpec.y + transformationMatrix[2].z * currSpec.z;
 
-        if (calculatedRGB.x < 0 || calculatedRGB.y < 0 || calculatedRGB.z < 0)
+        glm::vec3 finalRGB = transformationMatrix * currSpec;
+        finalRGB.x = transformationMatrix[0].x * currSpec.x + transformationMatrix[1].x * currSpec.y + transformationMatrix[2].x * currSpec.z;
+        finalRGB.y = transformationMatrix[0].y * currSpec.x + transformationMatrix[1].y * currSpec.y + transformationMatrix[2].y * currSpec.z;
+        finalRGB.z = transformationMatrix[0].z * currSpec.x + transformationMatrix[1].z * currSpec.y + transformationMatrix[2].z * currSpec.z;
+
+        /*printf("RGB Value before any correction: ");
+        std::cout << finalRGB.x;
+        printf(" ");
+        std::cout << finalRGB.y;
+        printf(" ");
+        std::cout << finalRGB.z;
+        printf(" ");
+        printf("\n");*/
+
+        if (finalRGB.x < 0 || finalRGB.y < 0 || finalRGB.z < 0)
         {
             float smallest = 99999.0f;
 
-            if (calculatedRGB.x < smallest)
-                smallest = calculatedRGB.x;
-            if (calculatedRGB.y < smallest)
-                smallest = calculatedRGB.y;
-            if (calculatedRGB.z < smallest)
-                smallest = calculatedRGB.z;
+            if (finalRGB.x < smallest)
+                smallest = finalRGB.x;
+            if (finalRGB.y < smallest)
+                smallest = finalRGB.y;
+            if (finalRGB.z < smallest)
+                smallest = finalRGB.z;
 
             smallest = -1.0 * smallest;
 
-            calculatedRGB.x += smallest;
-            calculatedRGB.y += smallest;
-            calculatedRGB.z += smallest;
+            finalRGB.x += smallest;
+            finalRGB.y += smallest;
+            finalRGB.z += smallest;
         }
 
-        if (calculatedRGB.x < 0.0031308f)
+        if (finalRGB.x < 0.0031308f)
         {
-            calculatedRGB.x *= 12.92f;
+            finalRGB.x *= 12.92f;
         }
         else
         {
-            calculatedRGB.x = (1.055f * (std::pow(calculatedRGB.x, (1.0f / 2.4f))) - 0.055f);
+            finalRGB.x = (1.055f * (std::pow(finalRGB.x, (1.0f / 2.4f))) - 0.055f);
         }
 
-        if (calculatedRGB.y < 0.0031308f)
+        if (finalRGB.y < 0.0031308f)
         {
-            calculatedRGB.y *= 12.92f;
+            finalRGB.y *= 12.92f;
         }
         else
         {
-            calculatedRGB.y = (1.055f * (std::pow(calculatedRGB.y, (1.0f / 2.4f))) - 0.055f);
+            finalRGB.y = (1.055f * (std::pow(finalRGB.y, (1.0f / 2.4f))) - 0.055f);
         }
 
-        if (calculatedRGB.z < 0.0031308f)
+        if (finalRGB.z < 0.0031308f)
         {
-            calculatedRGB.z *= 12.92f;
+            finalRGB.z *= 12.92f;
         }
         else
         {
-            calculatedRGB.z = (1.055f * (std::pow(calculatedRGB.z, (1.0f / 2.4f))) - 0.055f);
+            finalRGB.z = (1.055f * (std::pow(finalRGB.z, (1.0f / 2.4f))) - 0.055f);
         }
 
-        rgbValues.push_back(calculatedRGB);
+        RGBVals.push_back(finalRGB);
+
+        /*printf("Final RGB Value being pushed: ");
+        std::cout << finalRGB.x;
+        printf(" ");
+        std::cout << finalRGB.y;
+        printf(" ");
+        std::cout << finalRGB.z;
+        printf(" ");
+        printf("\n");*/
+
     }
 
-        // Loop until the window is closed. 
-        while (!glfwWindowShouldClose(window))
+
+
+    /* Loop until the user closes the window */
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearDepth(1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        float currentFrame = static_cast<float>(glfwGetTime());
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+
+        // Poll for and process events
+        glfwPollEvents();
+
+        if (whichRender == 0)
         {
-            glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            float currentFrame = static_cast<float>(glfwGetTime());
-            deltaTime = currentFrame - lastFrame;
-            lastFrame = currentFrame;
-
-            glfwPollEvents();
-
-            if (whichKeyPressed == 0)
-            {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            }
-            else if (whichKeyPressed == 1)
-            {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            }
-            else if (whichKeyPressed == 2)
-            {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
-                glPointSize(5.0);
-            }
-
-            glfwSwapBuffers(window);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
+        else if (whichRender == 1)
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        }
+        else if (whichRender == 2)
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+            glPointSize(5.0);
         }
 
         glUseProgram(ShaderProgram);
 
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)(xWindow / yWindow), 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)(xAspect / yAspect), 0.1f, 100.0f);
         int projectionLocation = glGetUniformLocation(ShaderProgram, "projection");
         glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &projection[0][0]);
 
         glm::mat4 view = glm::mat4(1.0f);
         float cameraRadius = 5.0f;
-        float xCam = cameraRadius * std::sin(elevation) * std::cos(phi);
-        float yCam = cameraRadius * std::cos(elevation);
-        float zCam = cameraRadius * std::sin(elevation) * std::sin(phi);
-        view = glm::lookAt(glm::vec3(xCam, yCam, zCam), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        float viewX = cameraRadius * std::sin(elevation) * std::cos(azimuth);
+        float viewY = cameraRadius * std::cos(elevation);
+        float viewZ = cameraRadius * std::sin(elevation) * std::sin(azimuth);
+        view = glm::lookAt(glm::vec3(viewX, viewY, viewZ), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         int viewLocation = glGetUniformLocation(ShaderProgram, "view");
         glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &view[0][0]);
 
@@ -601,23 +657,42 @@ int main(void)
         model = glm::translate(model, glm::vec3(-7.5f, 5.0f, 0.0f));
         int modelLocation = glGetUniformLocation(ShaderProgram, "model");
 
-        int rgbIndex = 0;
-        int rgbLocation = glGetUniformLocation(ShaderProgram, "RGB");
+        int RGBNum = 0;
+        int rgbLocation = glGetUniformLocation(ShaderProgram, "rgb");
 
-        // Render all 24 cubes into the scene. 
         for (int i = 0; i < 4; i++)
         {
             for (int j = 0; j < 6; j++)
             {
                 glUniformMatrix4fv(modelLocation, 1, GL_FALSE, &model[0][0]);
-                glUniform3fv(rgbLocation, 1, &rgbValues[rgbIndex][0]);
-                rgbIndex++;
-
+                glUniform3fv(rgbLocation, 1, &RGBVals[RGBNum][0]);
+                RGBNum++;
                 renderCube();
                 model = glm::translate(model, glm::vec3(3.0f, 0.0f, 0.0f));
             }
             model = glm::translate(model, glm::vec3(-18.0f, -3.0f, 0.0f));
         }
+
+
+
+        /*glBindVertexArray(sphereVAO);
+        glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);*/
+
+        /*glBindVertexArray(tangentLineVAO);
+        glDrawArrays(GL_LINES, 0, tangentLinePoints.size() / 2);
+        glBindVertexArray(bitangentLineVAO);
+        glDrawArrays(GL_LINES, 0, bitangentLinePoints.size() / 2);
+        glBindVertexArray(normalLineVAO);
+        glDrawArrays(GL_LINES, 0, normalLinePoints.size() / 2);*/
+
+        /*renderCube();*/
+
+        /*glBindVertexArray(0);
+        glUseProgram(0);*/
+
+        // Swap front and back buffers
+        glfwSwapBuffers(window);
+    }
 
     glfwTerminate();
 
@@ -626,67 +701,61 @@ int main(void)
 
 unsigned int cubeVAO = 0;
 unsigned int cubeVBO = 0;
-
 void renderCube()
 {
-
+    // initialize (if necessary)
     if (cubeVAO == 0)
     {
         float vertices[] = {
-
-            // Back Face
-            -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f,
-             1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f,
-             1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f,
-             1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f,
-            -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f,
-            -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f,
-
-            // Front Face
-            -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f,
-             1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f,
-             1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f,
-             1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f,
-            -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f,
-            -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f,
-
-            // Left Face
-            -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f,
-            -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f,
-            -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f,
-            -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f,
-            -1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f,
-            -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f,
-
-            // Right Face
-             1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f,
-             1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f,
-             1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f,
-             1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f,
-             1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f,
-             1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f,
-
-             // Bottom  Face
-             -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f,
-              1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f,
-              1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f,
-              1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f,
-             -1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f,
-             -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f,
-
-             // Top Face
-             -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f,
-              1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f,
-              1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f,
-              1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f,
-             -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f,
-             -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f
+            // back face
+            -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+             1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+             1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // bottom-right         
+             1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+            -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+            -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // top-left
+            // front face
+            -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+             1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
+             1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+             1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+            -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
+            -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+            // left face
+            -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+            -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-left
+            -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+            -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+            -1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+            -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+            // right face
+             1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+             1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+             1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-right         
+             1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+             1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+             1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left     
+             // bottom face
+             -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+              1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-left
+              1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+              1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+             -1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+             -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+             // top face
+             -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+              1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+              1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right     
+              1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+             -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+             -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left        
         };
-
         glGenVertexArrays(1, &cubeVAO);
         glGenBuffers(1, &cubeVBO);
+        // fill buffer
         glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+        // link vertex attributes
         glBindVertexArray(cubeVAO);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
@@ -697,8 +766,28 @@ void renderCube()
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
     }
-
+    // render Cube
     glBindVertexArray(cubeVAO);
     glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
 }
+
+//void colorExtraction(float* chromatrixVals, float* D65)
+//{
+//    glm::mat3 chromatrix = glm::make_mat3(chromatrixVals);
+//    chromatrix = glm::transpose(chromatrix);
+//    glm::mat3 chromatrixInverse = glm::inverse(chromatrix);
+//
+//    glm::vec3 white = glm::make_vec3(D65);
+//
+//    glm::vec3 scaler = chromatrixInverse * white;
+//    glm::mat3 RGBtransformer = chromatrixInverse;
+//
+//    for (int i = 0; i < 3; i++)
+//    {
+//        for (int j = 0; j < 3; j++)
+//        {
+//            RGBtransformer[i][j] = RGBtransformer[i][j] / scaler[i];
+//        }
+//    }
+//}
