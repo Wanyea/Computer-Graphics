@@ -125,10 +125,10 @@ float partialGeometry(vec3 v, vec3 n, vec3 h, float alpha)
 
 vec3 Fresnel_Schlick(float cosT, vec3 F0)
 {
-  return F0 + (1-F0) * pow( 1 - cosT, 5);
+  return F0 + (1-F0) * pow(1 - cosT, 5);
 }
 
-vec3 specular( samplerCube SpecularEnvmap, vec3 normal, vec3 viewVector, float roughness, vec3 F0, out vec3 kS )
+vec3 specular(samplerCube SpecularEnvmap, vec3 normal, vec3 viewVector, float roughness, vec3 F0, out vec3 kS )
 {
     vec3 reflectionVector = reflect(-viewVector, normal);
     vec3 radiance = vec3(0, 0, 0);
@@ -138,27 +138,33 @@ vec3 specular( samplerCube SpecularEnvmap, vec3 normal, vec3 viewVector, float r
     for(int i = 0; i < SamplesCount; ++i)
     {
         // Generate a sample vector in some local space
+
         vec2 X = Hammersley(uint(i), uint(SamplesCount));
         vec3 sampleVector = importanceSample(X, normal, roughness);
 
         // Calculate the half vector
+
         vec3 halfVector = normalize(sampleVector + viewVector);
         float cosT = clamp(dot(sampleVector, normal), 0.0, 1.0);
         float sinT = sqrt( 1 - cosT * cosT);
 
         // Calculate fresnel
-        vec3 fresnel = Fresnel_Schlick( clamp(dot( halfVector, viewVector ), 0.0, 1.0), F0 );
+        vec3 fresnel = Fresnel_Schlick(clamp(dot(halfVector, viewVector), 0.0, 1.0), F0 );
+
         // Geometry term
         float geometry = partialGeometry(viewVector, normal, halfVector, roughness) * partialGeometry(sampleVector, normal, halfVector, roughness);
+
         // Calculate the Cook-Torrance denominator
-        float denominator = clamp( 4 * (NoV * clamp(dot(halfVector, normal), 0.0, 1.0) + 0.05), 0.0, 1.0 );
+        float denominator = clamp( 4 * (NoV * clamp(dot(halfVector, normal), 0.0, 1.0) + 0.05), 0.0, 1.0)
+;
         kS += fresnel;
+
         // Accumulate the radiance
         radiance += textureLod(prefilterMap, sampleVector, roughness * MAX_REFLECTION_LOD).rgb * geometry * fresnel / denominator;
     }
 
     // Scale back for the samples count
-    kS = clamp( kS / SamplesCount, 0.0, 1.0 );
+    kS = clamp(kS / SamplesCount, 0.0, 1.0 );
     return radiance / SamplesCount;        
 }
 
@@ -448,7 +454,7 @@ float degreesToRadians(float degree)
 static void key_callback(GLFWwindow* window, int key, int keycode, int action, int mods)
 {
     float cameraSpeed = static_cast<float>(deltaTime);
-    float speed = 18.0f;
+    float speed = 55.0f;
     bool ep = false, em = false, ap = false, am = false;
 
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
@@ -548,7 +554,7 @@ int main(void)
 
     glfwSetKeyCallback(window, key_callback);
 
-    Shader shader("shader.vs.txt", "shader.vs.txt");
+    Shader shader("shader.vs", "shader.vs");
 
     unsigned int shaderObjVS = glCreateShader(GL_VERTEX_SHADER);
     int vertexLength = (int)strlen(srcVS);
@@ -820,7 +826,7 @@ int main(void)
 
     stbi_set_flip_vertically_on_load(true);
     int HDRWidth, HDRHeight, HDRComps;
-    float* HDR_Data = stbi_loadf("city.hdr", &HDRWidth, &HDRHeight, &HDRComps, 0);
+    float* HDR_Data = stbi_loadf("nature.hdr", &HDRWidth, &HDRHeight, &HDRComps, 0);
     unsigned int hdrTexture;
 
     if (HDR_Data != NULL)
@@ -839,6 +845,8 @@ int main(void)
     else {
         std::cout << "Failed to load HDR image." << std::endl;
     }
+
+    printf("%d %d\n", HDRWidth, HDRHeight);
 
     unsigned int environmentCubmap;
     glGenTextures(1, &environmentCubmap);
@@ -876,7 +884,7 @@ int main(void)
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, hdrTexture);
 
-    glViewport(0, 0, 1920, 1281);
+    glViewport(0, 0, 1024, 1024);
     glBindFramebuffer(GL_FRAMEBUFFER, capFBO);
 
     for (unsigned int i = 0; i < 6; ++i)
@@ -919,7 +927,7 @@ int main(void)
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, environmentCubmap);
 
-    glViewport(0, 0, 1920, 1281);
+    glViewport(0, 0, 32, 32);
     glBindFramebuffer(GL_FRAMEBUFFER, capFBO);
     for (unsigned int i = 0; i < 6; ++i)
     {
@@ -1116,7 +1124,6 @@ int main(void)
         bitangentLinePoints.push_back(positions[i] + 0.1f * bitangentVar);
         bitangentLinePoints.emplace_back(0.0f, 1.0f, 0.0f);
 
-
     }
 
     unsigned int skyboxVAO, skyboxVBO;
@@ -1136,8 +1143,8 @@ int main(void)
     glUniform1i(glGetUniformLocation(skyShaderProgram, "skybox"), 0);
     glViewport(0, 0, 1920, 1281);
 
-    Model aircraft("aircraft.fbx");
-    Model dragon("dragon.obj");
+    Model superNintendoModel("super-nintendo.obj");
+    Model keyModel("key.obj");
 
     while (!glfwWindowShouldClose(window))
     {
@@ -1195,18 +1202,18 @@ int main(void)
         glUniform1f(glGetUniformLocation(ShaderProgram, "metallic"), 0.3);
         glUniform1f(glGetUniformLocation(ShaderProgram, "roughness"), 0.3);
 
+        // Normal Incidence Fresnel Metals
         glm::vec3 goldColor = glm::vec3(1.0f, 0.87451f, 0.0f);
+        glm::vec3 stainlessColor = glm::vec3(0.72157f, 0.45098f, 0.20000f);
+        glm::vec3 ironColor = glm::vec3(0.77f, 0.78f, 0.78f);
+        glm::vec3 copperColor = glm::vec3(0.98, 0.82f, 0.76f);
+        glm::vec3 silverColor = glm::vec3(0.98, 0.97f, 0.95f);
+        glm::vec3 aluminumColor = glm::vec3(0.96, 0.96f, 0.97f);
+
         int matColorLocation = glGetUniformLocation(ShaderProgram, "materialColor");
         glUniform3fv(matColorLocation, 1, &goldColor[0]);
 
-        //renderSphere();
-
-        model = glm::translate(model, glm::vec3(-2.0f, 0.0f, 0.0f));
-        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, &model[0][0]);
-
-        glm::vec3 stainlessColor = glm::vec3(0.72157f, 0.45098f, 0.20000f);
-        glUniform3fv(matColorLocation, 1, &stainlessColor[0]);
-
+        // Render first sphere.
         //renderSphere();
 
         shader.use();
@@ -1221,16 +1228,33 @@ int main(void)
         shader.setInt("irradianceMap", 0);
         shader.setInt("prefilterMap", 1);
 
-        //aircraft.Draw(shader);
+        // Render Super Nintendo
+        superNintendoModel.Draw(shader);
 
-        glm::mat4 dragonModel = glm::mat4(1.0f);
-        dragonModel = glm::scale(dragonModel, glm::vec3(0.1f, 0.1f, 0.1f));
-        dragonModel = glm::rotate(dragonModel, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        dragonModel = glm::translate(dragonModel, glm::vec3(10.0f, 0.0f, 20.0f));
-        shader.setMat4("model", dragonModel);
-        shader.setVec3("materialColor", stainlessColor);
+        model = glm::translate(model, glm::vec3(-2.0f, 0.0f, 0.0f));
+        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, &model[0][0]);
 
-        //dragon.Draw(shader);
+        glUniform3fv(matColorLocation, 1, &silverColor[0]);
+
+        // Render second sphere.
+        //renderSphere();
+
+        /*glm::mat4 newSuperNintendoOrientation = glm::mat4(1.0f);
+        newSuperNintendoOrientation = glm::scale(newSuperNintendoOrientation, glm::vec3(0.1f, 0.1f, 0.1f));
+        newSuperNintendoOrientation = glm::rotate(newSuperNintendoOrientation, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        newSuperNintendoOrientation = glm::translate(newSuperNintendoOrientation, glm::vec3(10.0f, 0.0f, 20.0f));
+        shader.setMat4("model", newSuperNintendoOrientation);
+        shader.setVec3("materialColor", ironColor);*/
+
+        glm::mat4 newKeyOrientation = glm::mat4(1.0f);
+        newKeyOrientation = glm::scale(newKeyOrientation, glm::vec3(0.1f, 0.1f, 0.1f));
+        newKeyOrientation = glm::rotate(newKeyOrientation, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        newKeyOrientation = glm::translate(newKeyOrientation, glm::vec3(10.0f, 0.0f, 20.0f));
+        shader.setMat4("model", newKeyOrientation);
+        shader.setVec3("materialColor", ironColor);
+
+        // Render Key
+        keyModel.Draw(shader);
 
         glDepthFunc(GL_LEQUAL);
         glUseProgram(skyShaderProgram);
