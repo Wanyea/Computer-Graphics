@@ -350,7 +350,7 @@ float distribution(vec3 N, vec3 H, float roughness)
     float NdotH = max(dot(N, H), 0.0);
     float NdotH_Squared = NdotH*NdotH;
 
-    float nom   = aSquared;
+    float nom = aSquared;
     float denom = (NdotH_Squared * (aSquared - 1.0) + 1.0);
     denom = pi * denom * denom;
 
