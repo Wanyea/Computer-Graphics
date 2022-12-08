@@ -23,7 +23,8 @@ uniform mat4 view;
 uniform mat4 projection;
 uniform mat4 model;
 
-void main () {
+void main () 
+{
       gl_Position = projection * view * model * vec4(position, 1);
       fragNormal = normalize(normal);
 }
@@ -34,9 +35,8 @@ const char* srcFS = R"STOP(
 out vec4 outColor;
 in vec3 fragNormal;
 uniform vec3 rgb;
-void main () {
-   // outColor = vec4(vec3(1, 0.4553115f, 0.29534726f), 1);
-   // outColor = vec4(vec3(0.9444981f, 1.0f, 0.6309600f), 1);
+void main () 
+{
     outColor = vec4(rgb, 1);
 }
 )STOP";
@@ -145,7 +145,7 @@ int main(void)
     int yAspect = 1280;
 
     // Create a windowed mode window and its OpenGL context
-    window = glfwCreateWindow(xAspect, yAspect, "Hello World", NULL, NULL);
+    window = glfwCreateWindow(xAspect, yAspect, "Learn OpenGL", NULL, NULL);
 
     if (!window)
     {
@@ -231,23 +231,13 @@ int main(void)
 
             positions.emplace_back(xPos, yPos, zPos);
             normals.emplace_back(xPos, yPos, zPos);
-
-            /*std::cout << positions.back().x;
-            printf(" ");
-            std::cout << positions.back().y;
-            printf(" ");
-            std::cout << positions.back().z;
-            printf("\n");*/
         }
     }
-
-    // std::cout << positions.size();
-
 
     bool oddRow = false;
     for (unsigned int y = 0; y < Y_SEGMENTS; ++y)
     {
-        if (!oddRow) // even rows: y == 0, y == 2; and so on
+        if (!oddRow) 
         {
             for (unsigned int x = 0; x <= X_SEGMENTS; ++x)
             {
@@ -301,22 +291,6 @@ int main(void)
 
 
     }
-
-    /*for (int i = 0; i < bitangentLinePoints.size(); i++)
-    {
-        printf("Original position: %f", normalLinePoints[i].x);
-        printf("\n");
-        if (i % 4 == 0)
-        {
-            if (tangentLinePoints[i].x != bitangentLinePoints[i].x)
-            {
-                printf("Not the same point! ");
-                printf("%f %f", tangentLinePoints[i].x, bitangentLinePoints[i].x);
-                printf("\n");
-            }
-        }
-    }*/
-
 
     unsigned int sphereVAO = 0;
     glGenVertexArrays(1, &sphereVAO);
@@ -396,16 +370,21 @@ int main(void)
     std::cout << transformationMatrix[2][0];
     printf("\n");
 
+
     std::ifstream xyzCSV("XYZ.csv");
-    if (!xyzCSV.is_open()) throw std::runtime_error("Could not open file");
+    if (!xyzCSV.is_open())
+    {
+        throw std::runtime_error("Could not open file");
+    }
+    else {
+        std::cout << "XYZ.csv successfully opened!\n";
+    }
+
 
     std::vector<glm::vec3> xyzVals;
 
-    //std::cout << xyzVals[0].size();
-
     std::string line, colname;
     float val;
-
 
     while (std::getline(xyzCSV, line))
     {
@@ -442,8 +421,26 @@ int main(void)
         xyzVals.push_back(currCMF);
     }
 
+    // Print the values
+    for (const auto& val : xyzVals)
+    {
+        std::cout << val.x << " ";
+        std::cout << val.y << " ";
+        std::cout << val.z << " ";
+        std::cout << std::endl;
+
+    }
+
+    std::cout << "Done with xyz";
+
     std::ifstream specCSV("MacbethColorChecker.csv");
-    if (!specCSV.is_open()) throw std::runtime_error("Could not open file");
+    if (!specCSV.is_open())
+    {
+        throw std::runtime_error("Could not open file");
+    }
+    else {
+        std::cout << "MacbethColorChecker.csv successfully opened!\n";
+    }
 
     std::vector<float> specVals[24];
 
@@ -465,10 +462,17 @@ int main(void)
             // If the next token is a comma, ignore it and move on
             if (ss.peek() == ',') ss.ignore();
 
-
             // Increment the column index
             colIdx++;
         }
+    }
+
+    // Print the values
+    for (int i = 0; i < 24; i++) 
+    {
+        std::cout << specVals->at(i), " ";
+        std::cout << std::endl;
+
     }
 
     /*std::cout << specVals[23].size();*/
@@ -478,7 +482,7 @@ int main(void)
 
     glm::mat3 chromatrix = glm::make_mat3(chromatrixVals);
     chromatrix = glm::transpose(chromatrix);
-    //std::cout << chromatrix[0][2];
+
     glm::mat3 chromatrixInverse = glm::inverse(chromatrix);
 
     glm::vec3 white = glm::make_vec3(D65);
@@ -503,7 +507,6 @@ int main(void)
     std::cout << RGBTransformer[0][0];
     printf("\n");
 
-
     std::vector<glm::vec3> RGBVals;
 
     for (int i = 0; i < 24; i++)
@@ -525,29 +528,11 @@ int main(void)
         currSpec.y /= Ysum;
         currSpec.z /= Ysum;
 
-        /*printf("Final XYZ Value being pushed: ");
-        std::cout << currSpec.x;
-        printf(" ");
-        std::cout << currSpec.y;
-        printf(" ");
-        std::cout << currSpec.z;
-        printf(" ");
-        printf("\n");*/
-
-
         glm::vec3 finalRGB = transformationMatrix * currSpec;
         finalRGB.x = transformationMatrix[0].x * currSpec.x + transformationMatrix[1].x * currSpec.y + transformationMatrix[2].x * currSpec.z;
         finalRGB.y = transformationMatrix[0].y * currSpec.x + transformationMatrix[1].y * currSpec.y + transformationMatrix[2].y * currSpec.z;
         finalRGB.z = transformationMatrix[0].z * currSpec.x + transformationMatrix[1].z * currSpec.y + transformationMatrix[2].z * currSpec.z;
 
-        /*printf("RGB Value before any correction: ");
-        std::cout << finalRGB.x;
-        printf(" ");
-        std::cout << finalRGB.y;
-        printf(" ");
-        std::cout << finalRGB.z;
-        printf(" ");
-        printf("\n");*/
 
         if (finalRGB.x < 0 || finalRGB.y < 0 || finalRGB.z < 0)
         {
@@ -596,18 +581,7 @@ int main(void)
 
         RGBVals.push_back(finalRGB);
 
-        /*printf("Final RGB Value being pushed: ");
-        std::cout << finalRGB.x;
-        printf(" ");
-        std::cout << finalRGB.y;
-        printf(" ");
-        std::cout << finalRGB.z;
-        printf(" ");
-        printf("\n");*/
-
     }
-
-
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -672,23 +646,6 @@ int main(void)
             }
             model = glm::translate(model, glm::vec3(-18.0f, -3.0f, 0.0f));
         }
-
-
-
-        /*glBindVertexArray(sphereVAO);
-        glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);*/
-
-        /*glBindVertexArray(tangentLineVAO);
-        glDrawArrays(GL_LINES, 0, tangentLinePoints.size() / 2);
-        glBindVertexArray(bitangentLineVAO);
-        glDrawArrays(GL_LINES, 0, bitangentLinePoints.size() / 2);
-        glBindVertexArray(normalLineVAO);
-        glDrawArrays(GL_LINES, 0, normalLinePoints.size() / 2);*/
-
-        /*renderCube();*/
-
-        /*glBindVertexArray(0);
-        glUseProgram(0);*/
 
         // Swap front and back buffers
         glfwSwapBuffers(window);
@@ -771,23 +728,3 @@ void renderCube()
     glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
 }
-
-//void colorExtraction(float* chromatrixVals, float* D65)
-//{
-//    glm::mat3 chromatrix = glm::make_mat3(chromatrixVals);
-//    chromatrix = glm::transpose(chromatrix);
-//    glm::mat3 chromatrixInverse = glm::inverse(chromatrix);
-//
-//    glm::vec3 white = glm::make_vec3(D65);
-//
-//    glm::vec3 scaler = chromatrixInverse * white;
-//    glm::mat3 RGBtransformer = chromatrixInverse;
-//
-//    for (int i = 0; i < 3; i++)
-//    {
-//        for (int j = 0; j < 3; j++)
-//        {
-//            RGBtransformer[i][j] = RGBtransformer[i][j] / scaler[i];
-//        }
-//    }
-//}
