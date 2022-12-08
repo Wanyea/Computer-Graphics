@@ -826,7 +826,7 @@ int main(void)
 
     stbi_set_flip_vertically_on_load(true);
     int HDRWidth, HDRHeight, HDRComps;
-    float* HDR_Data = stbi_loadf("nature.hdr", &HDRWidth, &HDRHeight, &HDRComps, 0);
+    float* HDR_Data = stbi_loadf("outdoor.hdr", &HDRWidth, &HDRHeight, &HDRComps, 0);
     unsigned int hdrTexture;
 
     if (HDR_Data != NULL)
