@@ -1,7 +1,7 @@
 ﻿  assignment7.cpp
-C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 7\Assignment 7\assignment7.cpp(979,33): warning C4244: 'initializing': conversion from 'GLint' to 'float', possible loss of data
-C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 7\Assignment 7\assignment7.cpp(980,40): warning C4244: 'argument': conversion from 'float' to 'GLint', possible loss of data
-C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 7\Assignment 7\assignment7.cpp(980,21): warning C4244: 'argument': conversion from 'float' to 'GLint', possible loss of data
-C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 7\Assignment 7\assignment7.cpp(1202,73): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
-C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 7\Assignment 7\assignment7.cpp(1203,74): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 7\Assignment 7\assignment7.cpp(976,33): warning C4244: 'initializing': conversion from 'GLint' to 'float', possible loss of data
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 7\Assignment 7\assignment7.cpp(977,40): warning C4244: 'argument': conversion from 'float' to 'GLint', possible loss of data
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 7\Assignment 7\assignment7.cpp(977,21): warning C4244: 'argument': conversion from 'float' to 'GLint', possible loss of data
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 7\Assignment 7\assignment7.cpp(1199,73): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 7\Assignment 7\assignment7.cpp(1200,74): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
   Assignment 7.vcxproj -> C:\Users\wanye\source\ComputerGraphics\OpenGLRoot\Computer-Graphics\Assignment 7\x64\Debug\Assignment 7.exe

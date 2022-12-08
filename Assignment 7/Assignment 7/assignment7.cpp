@@ -434,8 +434,6 @@ void main()
 }
 )HERE";
 
-
-
 const float pi = 3.1415926535f;
 int whichKeyPressed = 0;
 float elevation = pi / 2.0f;
@@ -444,7 +442,6 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 int xWindow = 1920;
 int yWindow = 1281;
-
 
 float degreesToRadians(float degree)
 {
@@ -1289,7 +1286,6 @@ unsigned int cubeVBO = 0;
 
 void renderCube()
 {
-
     if (cubeVAO == 0)
     {
         float vertices[] = {
