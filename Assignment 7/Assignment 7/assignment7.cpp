@@ -823,7 +823,7 @@ int main(void)
 
     stbi_set_flip_vertically_on_load(true);
     int HDRWidth, HDRHeight, HDRComps;
-    float* HDR_Data = stbi_loadf("outdoor.hdr", &HDRWidth, &HDRHeight, &HDRComps, 0);
+    float* HDR_Data = stbi_loadf("glacier.hdr", &HDRWidth, &HDRHeight, &HDRComps, 0);
     unsigned int hdrTexture;
 
     if (HDR_Data != NULL)
@@ -1200,10 +1200,10 @@ int main(void)
         glUniform1f(glGetUniformLocation(ShaderProgram, "roughness"), 0.3);
 
         // Normal Incidence Fresnel Metals
-        glm::vec3 goldColor = glm::vec3(1.0f, 0.87451f, 0.0f);
+        glm::vec3 goldColor = glm::vec3(0.628f, 0.056f, 0.366f);
         glm::vec3 stainlessColor = glm::vec3(0.72157f, 0.45098f, 0.20000f);
         glm::vec3 ironColor = glm::vec3(0.77f, 0.78f, 0.78f);
-        glm::vec3 copperColor = glm::vec3(0.98, 0.82f, 0.76f);
+        glm::vec3 copperColor = glm::vec3(0.027, 0.138f, 0.086f);
         glm::vec3 silverColor = glm::vec3(0.98, 0.97f, 0.95f);
         glm::vec3 aluminumColor = glm::vec3(0.96, 0.96f, 0.97f);
 
@@ -1228,27 +1228,20 @@ int main(void)
         // Render Super Nintendo
         superNintendoModel.Draw(shader);
 
-        model = glm::translate(model, glm::vec3(-2.0f, 0.0f, 0.0f));
+        model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 0.0f));
         glUniformMatrix4fv(modelLocation, 1, GL_FALSE, &model[0][0]);
 
-        glUniform3fv(matColorLocation, 1, &silverColor[0]);
+        glUniform3fv(matColorLocation, 1, &copperColor[0]);
 
         // Render second sphere.
         //renderSphere();
 
-        /*glm::mat4 newSuperNintendoOrientation = glm::mat4(1.0f);
-        newSuperNintendoOrientation = glm::scale(newSuperNintendoOrientation, glm::vec3(0.1f, 0.1f, 0.1f));
-        newSuperNintendoOrientation = glm::rotate(newSuperNintendoOrientation, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        newSuperNintendoOrientation = glm::translate(newSuperNintendoOrientation, glm::vec3(10.0f, 0.0f, 20.0f));
-        shader.setMat4("model", newSuperNintendoOrientation);
-        shader.setVec3("materialColor", ironColor);*/
-
         glm::mat4 newKeyOrientation = glm::mat4(1.0f);
-        newKeyOrientation = glm::scale(newKeyOrientation, glm::vec3(0.1f, 0.1f, 0.1f));
+        newKeyOrientation = glm::scale(newKeyOrientation, glm::vec3(0.5f, 0.5f, 0.5f));
         newKeyOrientation = glm::rotate(newKeyOrientation, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         newKeyOrientation = glm::translate(newKeyOrientation, glm::vec3(10.0f, 0.0f, 20.0f));
         shader.setMat4("model", newKeyOrientation);
-        shader.setVec3("materialColor", ironColor);
+        shader.setVec3("materialColor", copperColor);
 
         // Render Key
         keyModel.Draw(shader);

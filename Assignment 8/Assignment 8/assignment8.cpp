@@ -240,13 +240,6 @@ int main(void)
     glm::mat3 transformationMatrix = glm::mat3(3.2404542f, -1.5371385f, -0.4985314f, -0.9692660f, 1.8760108f, 0.0415560f, 0.0556434f, -0.2040259f, 1.0572252f);
     transformationMatrix = glm::transpose(transformationMatrix);
 
-    std::cout << transformationMatrix[0][0];
-    printf(" ");
-    std::cout << transformationMatrix[2][0];
-    printf("\n");
-
-
-
     std::ifstream xyzCSV("XYZ.csv");
     if (!xyzCSV.is_open())
     {
@@ -368,7 +361,6 @@ int main(void)
 
     }
     std::cout << RGBTransformer[0][0];
-    printf("\n");
 
     std::vector<glm::vec3> RGBVals;
 
